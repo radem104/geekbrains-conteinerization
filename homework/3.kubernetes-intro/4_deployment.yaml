@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kubedoom
+  namespace: kubedoom
 spec:
   replicas: 1
   selector:
