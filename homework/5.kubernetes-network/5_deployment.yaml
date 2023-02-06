@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redmine
+  namespace: redmine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redmine-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: redmine-app
+    spec:
+      containers:
+      - image: redmine:4.1.1
+        name: redmine
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 3000
+        envFrom:
+          - secretRef:
+              name: redmine-secret
+          - configMapRef:
+              name: redmine
+        volumeMounts:
+          - mountPath: /usr/src/redmine/files
+            name: redmine
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "150m"
+          limits:
+            memory: "328Mi"
+            cpu: "250m"
+        readinessProbe:
+          httpGet:
+            path: /account/register
+            port: 3000
+        livenessProbe:
+          httpGet:
+            path: /account/register
+            port: 3000
+          initialDelaySeconds: 60
+          timeoutSeconds: 15
+      restartPolicy: Always
+      volumes:
+        - name: redmine
+          persistentVolumeClaim:
+            claimName: redmine-volume
