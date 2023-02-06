@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  namespace: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: postgresql-app
+    spec:
+      containers:
+      - image: postgres:10.13
+        name: postgresql
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 5432
+        envFrom:
+          - secretRef:
+              name: postgresql-secret
+          - configMapRef:
+              name: postgresql
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgresql-volume
